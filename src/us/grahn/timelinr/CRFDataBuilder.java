@@ -102,11 +102,15 @@ public class CRFDataBuilder extends JFrame {
         }
     }
 
-    public static void main(final String[] args) throws Exception {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        final CRFDataBuilder builder = new CRFDataBuilder();
-        builder.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        builder.setVisible(true);
+    public static void main(final String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            final CRFDataBuilder builder = new CRFDataBuilder();
+            builder.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            builder.setVisible(true);
+        } catch(final Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private final Action          actionAddCol  = new BuilderAction(ADD_COL_TEXT, ADD_COL_ICON);
