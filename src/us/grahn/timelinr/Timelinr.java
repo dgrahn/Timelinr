@@ -94,6 +94,7 @@ public class Timelinr {
             boolean hasDate = false;
             for (final CoreLabel cl : cm.get(TokensAnnotation.class)) {
                 if (!"NONE".equals(getDate(cl))) {
+                	System.out.println("Get Date = " + getDate(cl));
                     hasDate = true;
                     break;
                 }

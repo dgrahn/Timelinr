@@ -77,8 +77,8 @@ public class CRFDataBuilder extends JFrame {
 
     private static final String DEFAULT_HIGHLIGHTS =
               "C DATE #F38630\n"
-            + "E BGN #69D2E7\n"
-            + "E IN #A7DBD8";
+            + "F BGN #69D2E7\n"
+            + "F IN #A7DBD8";
 
     private static final ImageIcon LOAD_ICON    = getIcon("open.png");
     private static final String    LOAD_TEXT    = "Load...";
