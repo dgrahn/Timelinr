@@ -24,6 +24,7 @@ public class CRFData implements Iterable<List<String>> {
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             for (String line; (line = br.readLine()) != null;) {
+            	if (line.trim().isEmpty()) continue;
                 data.add(Arrays.asList(line.split("\\s+")));
             }
         }
