@@ -7,20 +7,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ling.CoreAnnotations.DocDateAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.time.TimeAnnotations.TimexAnnotation;
-import edu.stanford.nlp.time.Timex;
-import edu.stanford.nlp.util.CoreMap;
+import us.grahn.crf.CRFData;
+import us.grahn.crf.crfpp.CRFTest;
 
 public class Timelinr {
 
@@ -68,73 +60,68 @@ public class Timelinr {
         this.pipeline = new StanfordCoreNLP(props);
     }
 
-    private static final String getDate(final CoreLabel cl) {
+    private boolean useEstimate = false;
 
-        final Timex timex = cl.get(TimexAnnotation.class);
-        if (timex == null) return "NONE";
-
-        try {
-            final Date date = timex.getDate().getTime();
-            return new SimpleDateFormat("yyyy-MM-dd").format(date);
-        } catch (final Exception e) { }
-
-        if (timex.value() != null && Pattern.matches("\\d{4}(-\\d{2})?(-\\d{2})?", timex.value())) {
-            return timex.value();
-        }
-
-        return "NONE";
+    public void setUseEstimate(final boolean useEstimate) {
+        this.useEstimate = useEstimate;
     }
 
-    private static final CRFData buildCRF(final Annotation document) {
+    public boolean useEstimate() {
+        return useEstimate;
+    }
 
-        final CRFData data = new CRFData();
+    private File model = null;
 
-        for (final CoreMap cm : document.get(SentencesAnnotation.class)) {
+    public void setModel(final File model) {
+        this.model = model;
+    }
 
-            boolean hasDate = false;
-            for (final CoreLabel cl : cm.get(TokensAnnotation.class)) {
-                if (!"NONE".equals(getDate(cl))) {
-                	System.out.println("Get Date = " + getDate(cl));
-                    hasDate = true;
-                    break;
-                }
-            }
+    private Annotation annotate(final String text) {
 
-            String sentence = "BGN";
-            String label = "BGN";
-            for (final CoreLabel cl : cm.get(TokensAnnotation.class)) {
-                final String word = cl.get(TextAnnotation.class);
-                final String pos  = cl.get(PartOfSpeechAnnotation.class);
-                final String type = cl.get(NamedEntityTagAnnotation.class);
-                final String date = getDate(cl);
-                final String sntc = sentence;
-                final String cntx = !hasDate ? "OUT" : label;
-                sentence = label = "IN";
-                data.addRow(word, pos, type, date, sntc, cntx);
-            }
-        }
+        final Annotation document = new Annotation(text);
+        document.set(DocDateAnnotation.class, new SimpleDateFormat("yyyy-mm-dd").format(new Date()));
 
-        return data;
+        pipeline.annotate(document);
+
+        return document;
     }
 
     public CRFData process(final String title) {
 
-        // Get the article
-        final String text;
-        try {
-            text = Wikipedia.getExtract(title);
-        } catch (final IOException e) {
-            e.printStackTrace();
-            return null;
+        if (model == null && !useEstimate()) {
+            throw new RuntimeException("Either model must be set or estimated value must be used.");
         }
 
-        // Create an annotation from the given text
-        final Annotation document = new Annotation(text);
-        document.set(DocDateAnnotation.class, "2016-03-11"); // FIXME Use current date
+        // Here is how the data is process
+        // (1) Retrieve the Article
+        final String text = Wikipedia.getExtract(title);
+        if (text == null) return null;
 
-        pipeline.annotate(document);
+        // (2) Annotate using Stanford NLP
+        final Annotation document = annotate(text);
 
-        return buildCRF(document);
+        // (3) Build the CRF file
+        final CRFData data = TlrUtil.buildCrf(document, useEstimate());
+
+        // (3a) If we are estimated, short-circuit
+        if (useEstimate()) return data;
+
+        // (4) Write the data to a temporary file
+        final File temp = TlrUtil.getTempFile();
+        data.write(temp);
+
+        // (5) Process using CRF++
+        final CRFTest test = new CRFTest();
+        test.setModel(model);
+        test.setInput(temp);
+
+        // (6) Read in the new data
+        try {
+            final CRFData newData = new CRFData(temp);
+            return newData;
+        } catch (final IOException e) {
+            return null;
+        }
     }
 
 }
