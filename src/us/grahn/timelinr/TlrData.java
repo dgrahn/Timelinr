@@ -1,8 +1,5 @@
 package us.grahn.timelinr;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -29,6 +26,14 @@ public class TlrData {
             return date.compareTo(o.date);
         }
 
+        public Date getDate() {
+            return date;
+        }
+
+        public String getContext() {
+            return cntx;
+        }
+
         @Override
         public String toString() {
             return String.format("%1$tY-%1$tm-%1$td\t%2$s", date, cntx);
@@ -36,18 +41,7 @@ public class TlrData {
 
     }
 
-
     private final CRFData data;
-
-    public static void main(final String[] args) throws FileNotFoundException, IOException {
-
-        final CRFData crf = new CRFData(new File("data/Barack Obama.tlr"));
-        final TlrData tlr = new TlrData(crf);
-
-        for (final TlrItem it : tlr.getItems()) {
-            System.out.println(it);
-        }
-    }
 
     public List<TlrItem> getItems() {
         return items;

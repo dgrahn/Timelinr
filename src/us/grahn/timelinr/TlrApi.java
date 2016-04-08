@@ -13,12 +13,13 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import us.grahn.crf.CRFData;
 import us.grahn.crf.crfpp.CRFTest;
+import us.grahn.wiki.Wikipedia;
 
-public class Timelinr {
+public class TlrApi {
 
     public static void main(final String[] args) {
 
-        final Timelinr tlr = new Timelinr();
+        final TlrApi tlr = new TlrApi();
 
         final File input  = new File(args[0]);
         final File output = new File(args[1]);
@@ -52,7 +53,7 @@ public class Timelinr {
 
     private final StanfordCoreNLP pipeline;
 
-    public Timelinr() {
+    public TlrApi() {
         // Setup the pipeline
         final Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, sutime");

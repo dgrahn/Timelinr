@@ -1,4 +1,4 @@
-package us.grahn.timelinr;
+package us.grahn.wiki;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
