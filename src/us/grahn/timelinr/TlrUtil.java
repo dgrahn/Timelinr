@@ -44,9 +44,9 @@ class TlrUtil {
             if (TlrConstants.NON_DATE.equals(str)) {
                 return null;
             } else if (str.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                return new SimpleDateFormat("yyyy-mm-dd").parse(str);
+                return new SimpleDateFormat("yyyy-MM-dd").parse(str);
             } else if (str.matches("\\{4}-\\d{2}")) {
-                return new SimpleDateFormat("yyyy-mm").parse(str);
+                return new SimpleDateFormat("yyyy-MM").parse(str);
             } else if (str.matches("\\{4}")) {
                 return new SimpleDateFormat("yyyy").parse(str);
             } else {
@@ -98,8 +98,8 @@ class TlrUtil {
 
     }
 
-    public static final File getTempFile() {
-        final File temp = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString() + ".tmp");
+    public static final File getTempFile(final String prefix) {
+        final File temp = new File(System.getProperty("java.io.tmpdir"), prefix + "-" + UUID.randomUUID().toString() + ".tmp");
         temp.deleteOnExit();
         return temp;
     }

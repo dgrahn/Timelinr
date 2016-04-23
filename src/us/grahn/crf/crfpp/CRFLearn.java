@@ -11,17 +11,17 @@ public class CRFLearn {
     public static void main(final String[] args) {
 
         final CRFLearn learn = new CRFLearn();
-        learn.setTemplate(new File("data/template.txt"));
+        learn.setTemplate(new File("data/templates/connl2000-only34.txt"));
         learn.setDirectory(new File("data/train"));
         learn.setModel(new File("data/model.mod"));
         learn.learn();
 
         final CRFTest test = new CRFTest();
-        test.setInput(new File("data/test/Barack Obama.crf"));
-        test.setOutput(new File("data/Barack Obama.tlr"));
+        test.setInput(new File("data/test/combined.crf"));
+        test.setOutput(new File("data/combined.tlr"));
         test.setModel(new File("data/model.mod"));
         test.test();
-        
+
         System.out.println("Result = " + test.evaluate());
     }
 
@@ -32,11 +32,11 @@ public class CRFLearn {
 
     public void learn() {
 
-        if (!CRFUtil.LEARN.exists()) throw new RuntimeException("crf_learn.exe does not exist.");
-        if (!directory.exists())         throw new RuntimeException("Directory does not exist.");
-        if (!directory.isDirectory())    throw new RuntimeException("Directory is not a directory.");
-        if (!template.exists())          throw new RuntimeException("Template does not exist.");
-        if (model.exists())              throw new RuntimeException("Model already exists.");
+        if (!CRFUtil.LEARN.exists())  throw new RuntimeException("crf_learn.exe does not exist.");
+        if (!directory.exists())      throw new RuntimeException("Directory does not exist.");
+        if (!directory.isDirectory()) throw new RuntimeException("Directory is not a directory.");
+        if (!template.exists())       throw new RuntimeException("Template does not exist.");
+        if (model.exists())           throw new RuntimeException("Model already exists.");
 
         try {
             // Initialize the temp file.

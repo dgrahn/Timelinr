@@ -57,43 +57,65 @@ public class TlrData {
 
     }
 
+    private void addDates(final Set<Date> dates, final StringBuilder sb) {
+
+        if (!dates.isEmpty() && sb.length() > 0) {
+            addDates(dates, sb.toString());
+        }
+
+        sb.setLength(0);
+        dates.clear();
+    }
+
+    private void addWord(final StringBuilder sb, final String word) {
+        if (word.matches("\\W") && sb.length() != 0) sb.setLength(sb.length() - 1);
+        sb.append(word);
+        sb.append(" ");
+    }
+
     public TlrData(final CRFData data) {
         this.data = data;
 
-        final int startRow = -1;
-        final int lastRow  = -1;
-
         final StringBuilder sb = new StringBuilder();
-        final Set<Date> dates = new HashSet<Date>();
+        final Set<Date> dates = new HashSet<>();
+
+        final int count = 0;
+        boolean inSentence = false;
 
         for (int row = 0; row < data.getRowCount(); row++) {
 
-            final Date   date = TlrUtil.getDate(data.get(row, TlrConstants.DATE));
-            final String cntx = data.get(row, data.getColumnCount() - 1);
+            final String cntx = data.get(row, TlrConstants.CNTX);
             final String word = data.get(row, TlrConstants.WORD);
 
-            switch (cntx) {
-                case TlrConstants.CONTEXT_START:
-                    if (!sb.toString().trim().isEmpty() && !dates.isEmpty()) {
-                        addDates(dates, sb.toString());
-                        sb.setLength(0);
-                        dates.clear();
-                    }
-                case TlrConstants.CONTEXT_IN:
-                    sb.append(word);
-                    sb.append(" ");
-                    break;
-
-                case TlrConstants.CONTEXT_OUT:
-                    if (sb.toString().trim().isEmpty() || dates.isEmpty()) break;
-                    addDates(dates, sb.toString());
-                    sb.setLength(0);
-                    dates.clear();
-                    break;
-                default:
-            }
-
+            final Date date = TlrUtil.getDate(data.get(row, TlrConstants.DATE));
             if (date != null) dates.add(date);
+
+            if (inSentence) {
+
+                switch (cntx) {
+                    case TlrConstants.CONTEXT_IN:
+                        addWord(sb, word);
+                        break;
+
+                    case TlrConstants.CONTEXT_OUT:
+                        addDates(dates, sb);
+                        inSentence = false;
+                        break;
+
+                    case TlrConstants.CONTEXT_START:
+                        addDates(dates, sb);
+                        addWord(sb, word);
+                }
+            } else {
+                switch (cntx) {
+                    case TlrConstants.CONTEXT_START:
+                        inSentence = true;
+                        addWord(sb, word);
+                    default:
+                        dates.clear();
+                        sb.setLength(0);
+                }
+            }
         }
 
         Collections.sort(items);

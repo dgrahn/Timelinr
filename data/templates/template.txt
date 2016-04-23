@@ -1,4 +1,4 @@
-# Updated Unigrame
+# Updated Unigram
 U00:%x[-2,0]
 U01:%x[-2,1]
 #U02:%x[-2,2]

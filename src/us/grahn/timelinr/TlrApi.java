@@ -80,7 +80,7 @@ public class TlrApi {
     private Annotation annotate(final String text) {
 
         final Annotation document = new Annotation(text);
-        document.set(DocDateAnnotation.class, new SimpleDateFormat("yyyy-mm-dd").format(new Date()));
+        document.set(DocDateAnnotation.class, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 
         pipeline.annotate(document);
 
@@ -95,30 +95,43 @@ public class TlrApi {
 
         // Here is how the data is process
         // (1) Retrieve the Article
+        System.out.print("Retrieving... ");
         final String text = Wikipedia.getExtract(title);
         if (text == null) return null;
+        System.out.println("Done");
 
         // (2) Annotate using Stanford NLP
+        System.out.print("Annotating... ");
         final Annotation document = annotate(text);
+        System.out.println("Done");
 
         // (3) Build the CRF file
+        System.out.print("Building CRF... ");
         final CRFData data = TlrUtil.buildCrf(document, useEstimate());
+        System.out.println("Done");
 
         // (3a) If we are estimated, short-circuit
         if (useEstimate()) return data;
 
         // (4) Write the data to a temporary file
-        final File temp = TlrUtil.getTempFile();
+        final File temp = TlrUtil.getTempFile("input");
         data.write(temp);
 
+        final File temp2 = TlrUtil.getTempFile("output");
+        System.out.println("Temp 2 = " + temp2);
+
         // (5) Process using CRF++
+        System.out.print("Running CRF... ");
         final CRFTest test = new CRFTest();
         test.setModel(model);
         test.setInput(temp);
+        test.setOutput(temp2);
+        test.test();
+        System.out.println("Done");
 
         // (6) Read in the new data
         try {
-            final CRFData newData = new CRFData(temp);
+            final CRFData newData = new CRFData(temp2);
             return newData;
         } catch (final IOException e) {
             return null;
